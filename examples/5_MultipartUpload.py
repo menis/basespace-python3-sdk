@@ -40,7 +40,7 @@ print "Status is " + myMpu.Status
 myMpu.startUpload(returnOnFinish=1)
 
 # alter
-#myMpu = a.uploadMultipartFile(myAPI,'/home/mkallberg/Desktop/multi/chr21_test.bam','chr21_test.bam','','application/zip',tempDir='',partSize=5,cpuCount=8,verbose=1)
+myMpu = a.uploadMultipartFile(myAPI,'/home/mkallberg/Desktop/multi/chr21_test.bam','chr21_test.bam','','application/zip',tempDir='',partSize=5,cpuCount=8,verbose=1)
 #print "Status is " + myMpu.Status
 #myMpu.startUpload()
 
