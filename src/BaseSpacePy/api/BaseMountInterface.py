@@ -85,4 +85,4 @@ if __name__ == "__main__":
     import sys
     path = sys.argv[1]
     mbi = BaseMountInterface(path)
-    print mbi
+    print(mbi)

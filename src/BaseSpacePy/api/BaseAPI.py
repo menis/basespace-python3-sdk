@@ -1,10 +1,9 @@
 
 from pprint import pprint
-import urllib2
 import shutil
-import urllib
-import httplib
-import cStringIO
+import urllib.request, urllib.parse, urllib.error
+import http.client
+import io
 import json
 import os
 import inspect
@@ -33,9 +32,9 @@ class BaseAPI(object):
         try:
             prefix   = " " * len(label)
             var_list = json.dumps(var,indent=4).split('\n')  # ,ensure_ascii=False
-            print label + var_list[0]
+            print((label + var_list[0]))
             if len(var_list)>1:
-                print "\n".join( [prefix + s for s in var_list[1:]] )
+                print(("\n".join( [prefix + s for s in var_list[1:]] )))
         except UnicodeDecodeError:
             pass  # we could disable ascii-enforcing, as shown above, but 
                   # this will massively increase the volume of logs
@@ -57,24 +56,24 @@ class BaseAPI(object):
         :returns: an instance of the Response model from the provided myModel
         '''
         if self.verbose: 
-            print ""
-            print "* " + inspect.stack()[1][3] + "  (" + str(method) + ")"  # caller
-            print '    # Path:      ' + str(resourcePath)
-            print '    # QPars:     ' + str(queryParams)
-            print '    # Hdrs:      ' + str(headerParams)
-            print '    # forcePost: ' + str(forcePost)
+            print ("")
+            print(("* " + inspect.stack()[1][3] + "  (" + str(method) + ")"))  # caller
+            print(('    # Path:      ' + str(resourcePath)))
+            print(('    # QPars:     ' + str(queryParams)))
+            print(('    # Hdrs:      ' + str(headerParams)))
+            print(('    # forcePost: ' + str(forcePost)))
             self.__json_print__('    # postData:  ',postData)
         response = self.apiClient.callAPI(resourcePath, method, queryParams, postData, headerParams, forcePost=forcePost)
         if self.verbose:
             self.__json_print__('    # Response:  ',response)
         if not response: 
             raise ServerResponseException('No response returned')
-        if response.has_key('ResponseStatus'):
-            if response['ResponseStatus'].has_key('ErrorCode'):
+        if 'ResponseStatus' in response:
+            if 'ErrorCode' in response['ResponseStatus']:
                 raise ServerResponseException(str(response['ResponseStatus']['ErrorCode'] + ": " + response['ResponseStatus']['Message']))
-            elif response['ResponseStatus'].has_key('Message'):
+            elif 'Message' in response['ResponseStatus']:
                 raise ServerResponseException(str(response['ResponseStatus']['Message']))
-        elif response.has_key('ErrorCode'):
+        elif 'ErrorCode' in response:
             raise ServerResponseException(response["MessageFormatted"])
                  
         responseObject = self.apiClient.deserialize(response, myModel)
@@ -98,19 +97,19 @@ class BaseAPI(object):
         :returns: a list of instances of the provided model
         '''
         if self.verbose: 
-            print ""
-            print "* " + inspect.stack()[1][3] + "  (" + str(method) + ")"  # caller
-            print '    # Path:      ' + str(resourcePath)
-            print '    # QPars:     ' + str(queryParams)
-            print '    # Hdrs:      ' + str(headerParams)
+            print ("")
+            print(("* " + inspect.stack()[1][3] + "  (" + str(method) + ")"))  # caller
+            print(('    # Path:      ' + str(resourcePath)))
+            print(('    # QPars:     ' + str(queryParams)))
+            print(('    # Hdrs:      ' + str(headerParams)))
         response = self.apiClient.callAPI(resourcePath, method, queryParams, None, headerParams)
         if self.verbose:
             self.__json_print__('    # Response:  ',response)
         if not response: 
             raise ServerResponseException('No response returned')
-        if response['ResponseStatus'].has_key('ErrorCode'):
+        if 'ErrorCode' in response['ResponseStatus']:
             raise ServerResponseException(str(response['ResponseStatus']['ErrorCode'] + ": " + response['ResponseStatus']['Message']))
-        elif response['ResponseStatus'].has_key('Message'):
+        elif 'Message' in response['ResponseStatus']:
             raise ServerResponseException(str(response['ResponseStatus']['Message']))
         
         respObj = self.apiClient.deserialize(response, ListResponse.ListResponse)
@@ -128,8 +127,8 @@ class BaseAPI(object):
         '''
         # pycurl is hard to get working, so best to cauterise it into only the functions where it is needed
         import pycurl
-        post = urllib.urlencode(data)
-        response = cStringIO.StringIO()
+        post = urllib.parse.urlencode(data)
+        response = io.StringIO()
         c = pycurl.Curl()
         c.setopt(pycurl.URL,url)
         c.setopt(pycurl.POST, 1)
@@ -141,7 +140,7 @@ class BaseAPI(object):
         if not respVal:
             raise ServerResponseException("No response from server")
         obj = json.loads(respVal)
-        if obj.has_key('error'):
+        if 'error' in obj:
             raise ServerResponseException(str(obj['error'] + ": " + obj['error_description']))
         return obj      
 

@@ -18,8 +18,8 @@ import copy
 import json
 import os
 
-from BaseMountInterface import BaseMountInterface
-from BaseSpaceAPI import BaseSpaceAPI
+from .BaseMountInterface import BaseMountInterface
+from .BaseSpaceAPI import BaseSpaceAPI
 
 api = BaseSpaceAPI()
 API_VERSION = api.version
@@ -36,7 +36,7 @@ LAUNCH_HEADER = {
 }
 
 
-class AppSessionMetaData(object):
+class AppSessionMetaData(object, metaclass=abc.ABCMeta):
     """
     Class to help extract information from an appsession.
     This is an abstract base class without two concrete implementations:
@@ -44,8 +44,6 @@ class AppSessionMetaData(object):
     2. AppSessionMetaDataRaw: Working on a raw appsession (a .json object)
 
     """
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, appsession_metadata):
         """
@@ -365,8 +363,7 @@ class LaunchSpecification(object):
             raise LaunchSpecificationException(
                 "Compulsory variable(s) missing! (%s)" % str(required_vars - supplied_var_names))
         if supplied_var_names - (self.get_variable_requirements() | {"LaunchName"}):
-            print "warning! unused variable(s) specified: (%s)" % str(
-                supplied_var_names - self.get_variable_requirements())
+            print(("warning! unused variable(s) specified: (%s)" % str(supplied_var_names - self.get_variable_requirements())))
         all_vars = copy.copy(self.defaults)
         all_vars.update(user_supplied_vars)
         self.resolve_list_variables(all_vars)
@@ -393,7 +390,7 @@ class LaunchSpecification(object):
         dump all properties with their type and any default value
         for verbose usage information output
         """
-        print self.format_property_information()
+        print((self.format_property_information()))
 
     def format_minimum_requirements(self):
         minimum_requirements = self.get_minimum_requirements()

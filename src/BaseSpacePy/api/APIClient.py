@@ -2,10 +2,10 @@
 import sys
 import os
 import re
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import io
-import cStringIO
+import io
 import json
 from subprocess import *
 import subprocess
@@ -53,7 +53,7 @@ class APIClient:
         # c.perform()
         # c.close()
         # return response.getvalue()
-        encodedPost =  urllib.urlencode(postData)
+        encodedPost =  urllib.parse.urlencode(postData)
         resourcePath = "%s?%s" % (resourcePath, encodedPost)
         response = requests.post(resourcePath, data=json.dumps(postData), headers=headers)
         return response.text
@@ -67,7 +67,7 @@ class APIClient:
         :param transFile: the name of the file containing only data to be PUT
         :returns: server response (a string containing upload status message (from curl?) followed by json response)
         '''
-        headerPrep  = [k + ':' + headers[k] for k in headers.keys()]        
+        headerPrep  = [k + ':' + headers[k] for k in list(headers.keys())]        
         cmd = 'curl -H "x-access-token:' + self.apiKey + '" -H "Content-MD5:' + headers['Content-MD5'].strip() +'" -T "'+ transFile +'" -X PUT ' + resourcePath
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         return p.stdout.read()
@@ -97,10 +97,10 @@ class APIClient:
         if self.userAgent:
             headers['User-Agent'] = self.userAgent
         if headerParams:
-            for param, value in headerParams.iteritems():
+            for param, value in headerParams.items():
                 headers[param] = value
         # specify the content type
-        if not headers.has_key('Content-Type') and not method=='PUT' and not forcePost: 
+        if 'Content-Type' not in headers and not method=='PUT' and not forcePost: 
             headers['Content-Type'] = 'application/json'
         # include access token in header 
         headers['Authorization'] = 'Bearer ' + self.apiKey
@@ -110,20 +110,20 @@ class APIClient:
             if queryParams:
                 # Need to remove None values, these should not be sent
                 sentQueryParams = {}
-                for param, value in queryParams.iteritems():
+                for param, value in queryParams.items():
                     if value != None:
                         sentQueryParams[param] = value
-                url = url + '?' + urllib.urlencode(sentQueryParams)
-            request = urllib2.Request(url=url, headers=headers)
+                url = url + '?' + urllib.parse.urlencode(sentQueryParams)
+            request = urllib.request.Request(url=url, headers=headers)
         elif method in ['POST', 'PUT', 'DELETE']:
             if queryParams:
                 # Need to remove None values, these should not be sent
                 sentQueryParams = {}
-                for param, value in queryParams.iteritems():
+                for param, value in queryParams.items():
                     if value != None:
                         sentQueryParams[param] = value
                 forcePostUrl = url 
-                url = url + '?' + urllib.urlencode(sentQueryParams)
+                url = url + '?' + urllib.parse.urlencode(sentQueryParams)
             data = postData
             if data:
                 if type(postData) not in [str, int, float, bool]:
@@ -131,7 +131,7 @@ class APIClient:
             if not forcePost:
                 if data and not len(data): 
                     data='\n' # temp fix, in case is no data in the file, to prevent post request from failing
-                request = urllib2.Request(url=url, headers=headers, data=data)#,timeout=self.timeout)
+                request = urllib.request.Request(url=url, headers=headers, data=data)#,timeout=self.timeout)
             else:                                    # use pycurl to force a post call, even w/o data
                 response = self.__forcePostCall__(forcePostUrl, sentQueryParams, headers)
             if method in ['PUT', 'DELETE']: #urllib doesnt do put and delete, default to pycurl here
@@ -145,10 +145,10 @@ class APIClient:
         # Make the request
         if not forcePost and not method in ['PUT', 'DELETE']: # the normal case
             try:
-             response = urllib2.urlopen(request, timeout=self.timeout).read()
-            except urllib2.HTTPError as e:                
+             response = urllib.request.urlopen(request, timeout=self.timeout).read()
+            except urllib.error.HTTPError as e:                
                 response = e.read() # treat http error as a response (handle in caller)                
-            except urllib2.URLError as e:
+            except urllib.error.URLError as e:
                 raise ServerResponseException('URLError: ' + str(e))            
         try:
             data = json.loads(response)
@@ -187,7 +187,7 @@ class APIClient:
         # For dynamic types, substitute real class after looking up 'Type' value.
         # For lists, deserialize all members of a list, including lists of lists (though not list of list of list...).
         # For datetimes, convert to a readable output string 
-        for attr, attrType in instance.swaggerTypes.iteritems():
+        for attr, attrType in instance.swaggerTypes.items():
             if attr in obj:
                 value = obj[attr]
                 if attrType in ['str', 'int', 'float', 'bool']:
@@ -195,7 +195,7 @@ class APIClient:
                     try:
                         value = attrType(value)
                     except UnicodeEncodeError:
-                        value = unicode(value)
+                        value = str(value)
                     setattr(instance, attr, value)                            
                 elif attrType == 'DynamicType':                                                
                     try:
