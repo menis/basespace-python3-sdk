@@ -88,4 +88,11 @@ class RestMethodException(Exception):
         self.parameter = 'Error with REST API method: ' + value
     def __str__(self):
         return repr(self.parameter)
+
+class DownloadFailedException(Exception):
+    def __init__(self, value):
+        self.parameter = 'Error with downloading the file: ' + value
+    def __str__(self):
+        return repr(self.parameter)
+
     
