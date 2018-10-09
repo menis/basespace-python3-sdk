@@ -410,7 +410,7 @@ class MultipartDownload(object):
         self.file_name = self.bs_file.Name
         total_bytes = self.bs_file.Size
         part_size_bytes = self.part_size * (1024**2)
-        self.file_count = int(math.ceil(total_bytes/part_size_bytes)) + 1
+        self.file_count = int(math.ceil(total_bytes/part_size_bytes))
         
         file_name = self.file_name
         if not self.temp_dir:
