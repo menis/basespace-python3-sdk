@@ -2,7 +2,7 @@
 Forked from [raonyguimaraes](https://github.com/raonyguimaraes) and ran `2to3` to make it work with Python3. 
 
 ***********
-#Everything below is from the original repo located @ https://github.com/basespace/basespace-python-sdk
+Everything below is from the original repo located @ https://github.com/basespace/basespace-python-sdk
 ***********
 
 INTRODUCTION	
